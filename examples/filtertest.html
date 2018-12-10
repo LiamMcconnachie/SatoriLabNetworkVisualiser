@@ -1,4 +1,3 @@
-
 <!-- START SIGMA IMPORTS -->
 <script src="../src/sigma.core.js"></script>
 <script src="../src/conrad.js"></script>
@@ -107,7 +106,6 @@
       display: none;
       visibility: hidden;
     }
-
     input[type=range] {
       width: 160px;
     }
@@ -146,7 +144,6 @@
  * This is an example on how to use sigma filters plugin on a real-world graph.
  */
 var filter;
-
 /**
  * DOM utility functions
  */
@@ -154,11 +151,9 @@ var _ = {
   $: function (id) {
     return document.getElementById(id);
   },
-
   all: function (selectors) {
     return document.querySelectorAll(selectors);
   },
-
   removeClass: function(selectors, cssClass) {
     var nodes = document.querySelectorAll(selectors);
     var l = nodes.length;
@@ -168,7 +163,6 @@ var _ = {
       el.className = el.className.replace(cssClass, '');
     }
   },
-
   addClass: function (selectors, cssClass) {
     var nodes = document.querySelectorAll(selectors);
     var l = nodes.length;
@@ -180,15 +174,12 @@ var _ = {
       }
     }
   },
-
   show: function (selectors) {
     this.removeClass(selectors, 'hidden');
   },
-
   hide: function (selectors) {
     this.addClass(selectors, 'hidden');
   },
-
   toggle: function (selectors, cssClass) {
     var cssClass = cssClass || "hidden";
     var nodes = document.querySelectorAll(selectors);
@@ -205,26 +196,19 @@ var _ = {
     }
   }
 };
-
-
 function updatePane (graph, filter) {
   // get max degree
   var maxDegree = 0,
       categories = {};
-
       // read nodes
       graph.nodes().forEach(function(n) {
         maxDegree = Math.max(maxDegree, graph.degree(n.id));
-
         categories[n.attributes.themes] = true;
-
         // orgcategories[n.attributes.orgtype] = true;
       })
-
   // min degree
   _.$('min-degree').max = maxDegree;
   _.$('max-degree-value').textContent = maxDegree;
-
   // node category
   var nodecategoryElt = _.$('node-category');
   Object.keys(categories).forEach(function(c) {
@@ -232,7 +216,6 @@ function updatePane (graph, filter) {
     optionElt.text = c;
     nodecategoryElt.add(optionElt);
   });
-
   // // org category
   // var orgcategoryElt = _.$('org-category');
   // Object.keys(orgcategories).forEach(function(d) {
@@ -240,7 +223,6 @@ function updatePane (graph, filter) {
   //   optionElt.text = d;
   //   orgcategoryElt.add(optionElt);
   // });
-
   // reset button
   _.$('reset-btn').addEventListener("click", function(e) {
     _.$('min-degree').value = 0;
@@ -250,7 +232,6 @@ function updatePane (graph, filter) {
     _.$('dump').textContent = '';
     _.hide('#dump');
   });
-
   // export button
   _.$('export-btn').addEventListener("click", function(e) {
     var chain = filter.export();
@@ -259,59 +240,30 @@ function updatePane (graph, filter) {
     _.show('#dump');
   });
 }
-
 sigma.classes.graph.addMethod('neighbors', function(nodeId) {
   var k,
       neighbors = {},
       index = this.allNeighborsIndex[nodeId] || {};
-
   for (k in index)
     neighbors[k] = this.nodesIndex[k];
-
   return neighbors;
 });
-
 // Initialize sigma with the dataset:
-
 sigma.parsers.gexf('data/dfn2.gexf', {
   container: 'graph-container',
   settings: {
     edgeColor: 'default',
     defaultEdgeColor: '#ccc'
-
   }
-
-
-
 },
-
-
-
-
-// function(s) {
-//   // We first need to save the original colors of our
-//   // nodes and edges, like this:
-//   s.graph.nodes().forEach(function(n) {
-//     n.originalColor = n.colour;
-//   });
-//   s.graph.edges().forEach(function(e) {
-//     e.originalColor = e.color;
-//   }});
-// }
-
 
  function(s) {
   // Initialize the Filter API
   filter = new sigma.plugins.filter(s);
-
   updatePane(s.graph, filter);
-
-
-
   function applyMinDegreeFilter(e) {
     var v = e.target.value;
     _.$('min-degree-val').textContent = v;
-
     filter
       .undo('min-degree')
       .nodesBy(function(n) {
@@ -319,9 +271,6 @@ sigma.parsers.gexf('data/dfn2.gexf', {
       }, 'min-degree')
       .apply();
   }
-
-
-
   function applyCategoryFilter(e) {
     var c = e.target[e.target.selectedIndex].value;
     filter
@@ -332,9 +281,14 @@ sigma.parsers.gexf('data/dfn2.gexf', {
       .apply();
   }
 
-
-
-
+  // We first need to save the original colors of our
+  // nodes and edges, like this:
+  s.graph.nodes().forEach(function(n) {
+    n.originalColor = n.color;
+  });
+  s.graph.edges().forEach(function(e) {
+    e.originalColor = e.color;
+  });
   // When a node is clicked, we check for each node
   // if it is a neighbor of the clicked one. If not,
   // we set its color as grey, and else, it takes its
@@ -345,48 +299,36 @@ sigma.parsers.gexf('data/dfn2.gexf', {
     var nodeId = e.data.node.id,
         toKeep = s.graph.neighbors(nodeId);
     toKeep[nodeId] = e.data.node;
-
     s.graph.nodes().forEach(function(n) {
       if (toKeep[n.id])
         n.color = n.originalColor;
       else
         n.color = '#eee';
     });
-
     s.graph.edges().forEach(function(e) {
       if (toKeep[e.source] && toKeep[e.target])
         e.color = e.originalColor;
       else
         e.color = '#eee';
     });
-
     // Since the data has been modified, we need to
     // call the refresh method to make the colors
     // update effective.
     s.refresh();
   });
-
   s.bind('clickStage', function(e) {
     s.graph.nodes().forEach(function(n) {
       n.color = n.originalColor;
     });
-
     s.graph.edges().forEach(function(e) {
       e.color = e.originalColor;
     });
-
     // Same as in the previous event:
     s.refresh();
   });
-
-
-
-
-
 //   s.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(a) {
 //     console.log(a.type, a.data.node.label, a.data.captor);
 // });
-
 // //click on node to change color
 //
 // s.bind('clickNode', function(e) {
@@ -400,13 +342,8 @@ sigma.parsers.gexf('data/dfn2.gexf', {
 //   }
 //   s.refresh();
 // });
-
-
-
-
   // Initialize the dragNodes plugin:
   var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
-
   dragListener.bind('startdrag', function(event) {
     console.log(event);
   });
@@ -419,18 +356,9 @@ sigma.parsers.gexf('data/dfn2.gexf', {
   dragListener.bind('dragend', function(event) {
     console.log(event);
   });
-
-
-
   _.$('min-degree').addEventListener("input", applyMinDegreeFilter);  // for Chrome and FF
   _.$('min-degree').addEventListener("change", applyMinDegreeFilter); // for IE10+, that sucks
   _.$('node-category').addEventListener("change", applyCategoryFilter);
   _.$('org-category').addEventListener("change", applyOrgCategoryFilter);
-
 });
-
-
-
-
-
 </script>
